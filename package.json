@@ -1,7 +1,7 @@
 {
   "name": "@multila/multila-parser-generator",
   "version": "0.1.0",
-  "description": "Lexical Analyzer written in TypeScript",
+  "description": "An LR(1) Parser Generator written in TypeScript",
   "main": "lib/index.js",
   "scripts": {
     "build": "tsc --project tsconfig.build.json && node ./build.mjs"
