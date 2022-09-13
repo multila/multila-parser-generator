@@ -155,7 +155,7 @@ For parsing an input program, you may either use method `parse(lexer:Lexer)` of 
 
 Use method `getTable()` of class `LR1` to get the generated parse table. An stringified output for the example above is listed in the following:
 
-```json
+```
 0: action={"INT"->S18, ":("->S5}; goto={add->19, mul->2, unary->1 }
 1: action={"END"->R4, ":+"->R4, ":*"->R4}; goto={ }
 2: action={":*"->S3, "END"->R2, ":+"->R2}; goto={ }
