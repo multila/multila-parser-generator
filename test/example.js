@@ -8,17 +8,16 @@
 var lex = require('@multila/multila-lexer');
 const parse = require('@multila/multila-parser-generator');
 
-// Define production rules (bottom-up parsing).
-// The identifier right to "->" defines the name of a callback function.
+// Define production rules for bottom-up parsing.
+// The identifier right to "->" defines the name of a callback function that
+// is called after reduction of the rule.
 // The first rule is also called root-rule.
+// Instead of using the or operator "|", you may write rules also individually.
 const rulesSrc = `
 term = add;
-add = add "+" mul -> callbackAdd;
-add = mul;
-mul = mul "*" unary -> callbackMultiply;
-mul = unary;
-unary = INT -> callbackConst;
-unary = "(" add ")";
+add = add "+" mul -> callbackAdd | mul;
+mul = mul "*" unary -> callbackMultiply | unary;
+unary = INT -> callbackConst | "(" add ")";
 `;
 
 // Create an instance of parser the generator and parse rules

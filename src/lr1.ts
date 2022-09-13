@@ -93,7 +93,8 @@ export class LR1 {
    * Parses production rules in the form "u = v1 v2 ... -> callback;",
    * specified in a small DSL. Grammar is as follows:
    *   rules = { rule };
-   *   rule = ID "=" { item } [ "->" ID ] ";";
+   *   rule = ID "=" rhs { "|" rhs } ";";
+   *   rhs = { item } [ "->" ID ];
    *   item = "INT" | "REAL" | "HEX" | "ID" | "STR" | ID | STR;
    * @param src rules defined in the DSL specified above
    */
@@ -108,16 +109,23 @@ export class LR1 {
   }
   private parseRule(lexer: Lexer): void {
     const lhs = lexer.ID();
-    const r = this.addRule(lhs);
     lexer.TER('=');
-    while (lexer.isNotTER(';') && lexer.isNotTER('->')) {
+    this.parseRhs(lhs, lexer);
+    while (lexer.isTER('|')) {
+      lexer.next();
+      this.parseRhs(lhs, lexer);
+    }
+    lexer.TER(';');
+  }
+  private parseRhs(lhs: string, lexer: Lexer): void {
+    const r = this.addRule(lhs);
+    while (lexer.isNotTER('|') && lexer.isNotTER(';') && lexer.isNotTER('->')) {
       this.parseItem(lexer, r);
     }
     if (lexer.isTER('->')) {
       lexer.next();
       r.callBackId = lexer.ID();
     }
-    lexer.TER(';');
   }
   private parseItem(lexer: Lexer, r: LR1_Rule): void {
     if (

@@ -20,9 +20,11 @@ npm install @multila/multila-parser-generator
 
 ## Example
 
-The example program in this section defines a trivial interpreter for mathematical terms that consist of integral constants, operators `+` and `*`, as well as parenthesis. For example, `2 * (3+4)` is evaluated `14`.
+The example program in this section defines a trivial interpreter for mathematical terms.
+These terms consist of integer constants, operators `+` and `*`, as well as parentheses.
+For example, `2 * (3+4)` is evaluated as `14`.
 
-The grammar for this simple language can be written in EBNF as follows.
+The grammar for this simple language can be written in BNF as follows:
 
 ```ebnf
 term = add;
@@ -33,27 +35,26 @@ unary = INT | "(" add ")";
 
 Interpretation can be handled by using a stack:
 
-- Constant integer values (in rule `unary`) are pushed on the stack.
-- To apply the binary operators, the two topmost values are popped from the stack, then added (or multiplied respectively). The result is pushed on the stack.
+- Constant integer values are pushed on top of the stack.
+- Binary operations, pop the two topmost values from the stack, add them (or multiply them respectively), and push the result onto the stack.
 
-The following code implements the example. Copy it to [https://npm.runkit.com/](https://npm.runkit.com/) and run it!
+The following code (that can also be found in file `test/example.js`) implements the example. Copy it to [https://npm.runkit.com/](https://npm.runkit.com/) and run it!
 
 ```javascript
 // Import dependencies
 var lex = require('@multila/multila-lexer');
 const parse = require('@multila/multila-parser-generator');
 
-// Define production rules (bottom-up parsing).
-// The identifier right to "->" defines the name of a callback function.
+// Define production rules for bottom-up parsing.
+// The identifier right to "->" defines the name of a callback function that
+// is called after reduction of the rule.
 // The first rule is also called root-rule.
+// Instead of using the or operator "|", you may write rules also individually.
 const rulesSrc = `
 term = add;
-add = add "+" mul -> callbackAdd;
-add = mul;
-mul = mul "*" unary -> callbackMultiply;
-mul = unary;
-unary = INT -> callbackConst;
-unary = "(" add ")";
+add = add "+" mul -> callbackAdd | mul;
+mul = mul "*" unary -> callbackMultiply | unary;
+unary = INT -> callbackConst | "(" add ")";
 `;
 
 // Create an instance of parser the generator and parse rules
@@ -139,7 +140,8 @@ rule.addNonTerminalItem('y');
 
 ```ebnf
 rules = { rule };
-rule = ID "=" { item } [ "->" ID ] ";";
+rule = ID "=" rhs { "|" rhs } ";";
+rhs = { item } [ "->" ID ];
 item = "INT" | "REAL" | "HEX" | "ID" | "STR" | ID | STR;
 ```
 
@@ -153,7 +155,7 @@ For parsing an input program, you may either use method `parse(lexer:Lexer)` of 
 
 Use method `getTable()` of class `LR1` to get the generated parse table. An stringified output for the example above is listed in the following:
 
-```
+```json
 0: action={"INT"->S18, ":("->S5}; goto={add->19, mul->2, unary->1 }
 1: action={"END"->R4, ":+"->R4, ":*"->R4}; goto={ }
 2: action={":*"->S3, "END"->R2, ":+"->R2}; goto={ }
